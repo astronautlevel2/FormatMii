@@ -50,3 +50,27 @@ void BackupCtrFs(void)
     if (R_SUMMARY(FSUSER_OpenDirectory(NULL, sdmcArchive, fsMakePath(PATH_ASCII, "/FormatMii/backup")) == RS_NOTFOUND))
         FSUSER_CreateDirectory(sdmcArchive, fsMakePath(PATH_ASCII, "/FormatMii/backup"), FS_ATTRIBUTE_DIRECTORY);
 }
+
+Result copy_directory(const char *source_path, const FS_Archive source_archive, const char *dest_path, const FS_Archive dest_archive)
+{
+    Result res;
+    Handle dir_handle;
+    Handle file_handle;
+
+    res = FSUSER_OpenDirectory(&dir_handle, source_archive, fsMakePath(PATH_ASCII, source_path));
+    while (true)
+    {
+        FS_DirectoryEntry *entry = malloc(sizeof(FS_DirectoryEntry));
+        u32 entries_read;
+        FSDIR_Read(dir_handle, &entries_read, 1, entry);
+        if (entries_read)
+        {
+            char *full_source_path = calloc(1, 0x106);
+            strcpy(full_source_path, source_path);
+            utf16_to_utf8(&full_source_path[strlen(source_path)], entry->name, 0x106 - strlen(source_path));
+            char *full_dest_path = calloc(1, 0x106);
+            strcpy(full_dest_path, dest_path);
+            utf16_to_utf8(&full_dest_path[strlen(dest_path)], entry->name, 0x106 - strlen(dest_path));
+        }
+    }
+}
